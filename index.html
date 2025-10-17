@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown to HTML Renderer</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom inline CSS -->
+    <style>
+        body {
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: #fff;
+            color: #333;
+        }
+        #markdown-output pre {
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card p-4">
+            <h1 class="mb-4">Markdown to HTML Renderer</h1>
+            <div id="markdown-output"></div> <!-- Output area for rendered HTML -->
+        </div>
+    </div>
+    
+    <!-- Load external libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@5.1.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/lib/highlight.min.js"></script>
+    
+    <script>
+        // Function to decode base64 string to text
+        function base64Decode(str) {
+            return decodeURIComponent(atob(str).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+        }
+
+        // Store the markdown contents from data URI
+        const markdownDataUri = "data:text/markdown;base64,${base64EncodedMarkdownContent}";
+
+        // Main function to fetch, convert and display markdown
+        async function renderMarkdown() {
+            try {
+                // Extract base64 content from data URI
+                const base64Content = markdownDataUri.split(',')[1];
+                const markdownContent = base64Decode(base64Content);
+
+                // Use `marked` library to convert markdown to HTML
+                const htmlContent = marked(markdownContent, {
+                    highlight: function(code, lang) {
+                        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                        return hljs.highlight(code, { language }).value;
+                    }
+                });
+
+                // Set the innerHTML of the markdown output element
+                document.getElementById('markdown-output').innerHTML = htmlContent;
+            } catch (error) {
+                console.error('Error rendering markdown:', error);
+                document.getElementById('markdown-output').innerHTML = '<div class="alert alert-danger">Failed to render markdown.</div>';
+            }
+        }
+
+        // Initialize the rendering process
+        document.addEventListener('DOMContentLoaded', renderMarkdown);
+    </script>
+</body>
+</html>
